@@ -7,7 +7,6 @@ use std::sync::Arc;
 extern crate chatstuff;
 use chatstuff::ThreadPool;
 
-
 pub type Result<T> = std::result::Result<T, ()>;
 
 #[derive(Debug)]
@@ -25,7 +24,6 @@ enum Message {
 
 fn server(message_receiver: Receiver<Message>) -> Result<()> {
     let mut clients = HashMap::new();
-
     loop {
         let message = message_receiver.recv()
                         .map_err(|err| eprintln!("[ERROR]: could not get the message: {err}"))?;
@@ -66,7 +64,6 @@ fn client(stream: Arc<TcpStream>, message_sender: Arc<Sender<Message>>) -> Resul
             message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
         })?;
         
-        //println!("{bytes_read}");
         if bytes_read == 0 {
             message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
             break;
@@ -97,7 +94,6 @@ fn main() -> Result<()> {
         match stream {
             Ok(stream) => {
                 let stream = Arc::new(stream);
-                println!("{:?}", stream);
                 let message_sender = Arc::clone(&message_sender);
                 pool.execute(|| {
                     client(stream, message_sender);
