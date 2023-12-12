@@ -66,11 +66,11 @@ fn client(stream: Arc<TcpStream>, message_sender: Arc<Sender<Message>>) -> Resul
             message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
         })?;
         
-        println!("{bytes_read}");
-        //if bytes_read == 0 {
-          //  message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
-          //  break;
-        //}
+        //println!("{bytes_read}");
+        if bytes_read == 0 {
+            message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
+            break;
+        }
         
         message_sender.as_ref().send(Message::NewMessage{author:Arc::clone(&stream), bytes: buffer.clone()}).map_err(|err| {
             eprintln!("[ERROR]: error reading into the client buffer {err}");
