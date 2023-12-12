@@ -26,7 +26,7 @@ fn server(message_receiver: Receiver<Message>) -> Result<()> {
     let mut clients = HashMap::new();
     loop {
         let message = message_receiver.recv()
-                        .map_err(|err| eprintln!("[ERROR]: could not get the message: {err}"))?;
+                        .expect("[ERROR]: could not get the message: {err}");
         match message {
             Message::ClientConnected{author} => {
                   let addr = author.as_ref().peer_addr().expect("[ERROR]: could not get the client address");
