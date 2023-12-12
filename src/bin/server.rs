@@ -47,9 +47,9 @@ fn server(message_receiver: Receiver<Message>) -> Result<()> {
                   }
             },
             Message::ClientDisconnected{author} => {
-                println!("disconnected");
+                let addr = author.as_ref().peer_addr().expect("[ERROR]: could not get the client address");
+                clients.remove(&addr);
             },
-            _ => {}
         }
     }
    Ok(())
@@ -61,11 +61,12 @@ fn client(stream: Arc<TcpStream>, message_sender: Arc<Sender<Message>>) -> Resul
     let mut buffer: Vec<u8> = vec![0; 64];
 
     loop {
-        let bytes_read = stream.as_ref().read(&mut buffer).map_err(|err| {
+        let bytes_read = stream.as_ref().read(&mut buffer[..]).map_err(|err| {
             eprintln!("[ERROR]: error reading into the client buffer {err}");
             message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
         })?;
         
+        println!("{bytes_read}");
         //if bytes_read == 0 {
           //  message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
           //  break;
@@ -96,6 +97,7 @@ fn main() -> Result<()> {
         match stream {
             Ok(stream) => {
                 let stream = Arc::new(stream);
+                println!("{:?}", stream);
                 let message_sender = Arc::clone(&message_sender);
                 pool.execute(|| {
                     client(stream, message_sender);
