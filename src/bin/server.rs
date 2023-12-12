@@ -48,6 +48,7 @@ fn server(message_receiver: Receiver<Message>) -> Result<()> {
                 let addr = author.as_ref().peer_addr().expect("[ERROR]: could not get the client address");
                 clients.remove(&addr);
             },
+            _ => {},
         }
     }
    Ok(())
