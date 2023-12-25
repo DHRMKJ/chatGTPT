@@ -21,9 +21,10 @@ enum Message {
     NewMessage{bytes:Vec<u8>, author: Arc<TcpStream>}
 }
 
-
 fn server(message_receiver: Receiver<Message>) -> Result<()> {
     let mut clients = HashMap::new();
+    // let mut bannedMfs = HashMap::new();
+
     loop {
         let message = message_receiver.recv()
                         .expect("[ERROR]: could not get the message: {err}");
@@ -48,19 +49,17 @@ fn server(message_receiver: Receiver<Message>) -> Result<()> {
                 let addr = author.as_ref().peer_addr().expect("[ERROR]: could not get the client address");
                 clients.remove(&addr);
             },
-            _ => {},
         }
     }
-   Ok(())
 }
 
 fn client(stream: Arc<TcpStream>, message_sender: Arc<Sender<Message>>) -> Result<()> {
     message_sender.as_ref().send(Message::ClientConnected{author: Arc::clone(&stream)}).map_err(|err| eprintln!("[ERROR]: could not send message to the server {err}"))?;
     
-    let mut buffer: Vec<u8> = vec![0; 64];
-
+    let mut buffer: Vec<u8> = Vec::new();
+    buffer.resize(64, 0);
     loop {
-        let bytes_read = stream.as_ref().read(&mut buffer[..]).map_err(|err| {
+        let bytes_read = stream.as_ref().read(&mut buffer).map_err(|err| {
             eprintln!("[ERROR]: error reading into the client buffer {err}");
             message_sender.send(Message::ClientDisconnected{author: Arc::clone(&stream)}).expect("[ERROR]: could not disconnect client");
         })?;
@@ -89,7 +88,7 @@ fn main() -> Result<()> {
     let (message_sender, message_receiver) = channel();
     let message_sender = Arc::new(message_sender);
 
-    pool.execute(|| { server(message_receiver); });
+    pool.execute(|| { let _ = server(message_receiver); });
 
     for stream in listener.incoming() {
         match stream {
@@ -97,7 +96,7 @@ fn main() -> Result<()> {
                 let stream = Arc::new(stream);
                 let message_sender = Arc::clone(&message_sender);
                 pool.execute(|| {
-                    client(stream, message_sender);
+                    let _ = client(stream, message_sender);
                 })
             },
             Err(err) => {
