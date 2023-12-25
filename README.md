@@ -1,1 +1,3 @@
-# an unsafe chat server written entirely in safe rust with rust std!!
+# A Chat Server Story
+
+will make chat server better and better whenever I feel like!
