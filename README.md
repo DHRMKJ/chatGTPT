@@ -6,7 +6,7 @@ the last version will be in the src/legacy dir and maybe i'll make branches idk 
 
 NEXT:
 - adding sqlite or maybe redis to store clients or maybe my own concurrent database
-- ban mfs
+- ban mfs ✅
 - timeout after a message
 
 
