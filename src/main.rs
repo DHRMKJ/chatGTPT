@@ -17,8 +17,8 @@ async fn main() -> Result<()> {
     })?;
 
     println!("listening to address: {address}");
-
-    let (message_sender, message_reciever) = mpsc::channel::<Message>(1000);
+    
+    let (message_sender, message_reciever) = mpsc::channel::<Message>(2000);
     let message_sender = Arc::new(message_sender);
     
     tokio::spawn(async move { 
@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
             Ok(stream) => {
                 let message_sender = Arc::clone(&message_sender);
                 tokio::spawn(async move {
-                    client(stream, message_sender).await;
+                    client(stream, message_sender).await.expect("[ERROR]: fatal creating client");
                 });
             }, 
             Err(err) => eprintln!("[ERROR]: error listening to port, {err}")

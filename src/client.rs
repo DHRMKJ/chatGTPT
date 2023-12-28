@@ -26,7 +26,7 @@ pub async fn client(stream: (TcpStream, std::net::SocketAddr), message_sender: A
     match stream.as_ref().readable().await {
         Ok(_) => {}
         Err(e) => {
-            eprintln!("[ERROR]: stream is not readable");
+            eprintln!("[ERROR]: stream is not readable {e}");
             conn = false;
         }
     }
@@ -41,15 +41,15 @@ pub async fn client(stream: (TcpStream, std::net::SocketAddr), message_sender: A
                         .await;
                     conn = false;
                 },
-                Ok(n) => {
+                Ok(_n) => {
                     let addr = addr.clone();
                     match message_sender.send(Message::NewMessage{message: buffer.clone(), addr})
                         .await {
                         Ok(_) => {
-                            println!("sent message {addr}");
+                            //println!("sent message {addr}, {:?}", std::str::from_utf8(&buffer));
                         }
-                        Err(e) => {
-                            message_sender.send(Message::ClientDisconnected(addr)).await;
+                        Err(_e) => {
+                            message_sender.send(Message::ClientDisconnected(addr)).await.expect("[ERROR]: failed to send message");
                             conn = false;
                         }
                     }
@@ -59,8 +59,8 @@ pub async fn client(stream: (TcpStream, std::net::SocketAddr), message_sender: A
                     continue;
                 }
                 Err(e) => {
-                    message_sender.send(Message::ClientDisconnected(addr)).await;
-                    eprintln!("[ERROR]: error writing into the stream {e}");
+                    message_sender.send(Message::ClientDisconnected(addr)).await.expect("[ERROR]: failed to send message");
+                    eprintln!("[ERROR]: error reading into the stream {e}");
                     conn = false;
                 }
             }
